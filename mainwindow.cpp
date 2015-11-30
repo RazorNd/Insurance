@@ -3,6 +3,7 @@
 #include "clientedit.h"
 #include "insurancetypeedit.h"
 #include <QSqlError>
+#include <QSqlQuery>
 #include <QDebug>
 
 
@@ -96,9 +97,10 @@ void MainWindow::on_insuranceTypeView_doubleClicked(const QModelIndex &index)
 void MainWindow::on_addInsuranceType_triggered()
 {
     int newRow = _insuranceType->rowCount();
-    _insuranceType->insertRow(newRow);
-    InsuranceTypeEdit edit(_insuranceType, _insuranceDeal->index(newRow, 0), true, this);
+    _insuranceType->insertRow(newRow);    
+    InsuranceTypeEdit edit(_insuranceType, _insuranceType->index(newRow, 0), true, this);
     if(edit.exec() != QDialog::Accepted) {
+
         _insuranceType->revertAll();
-    }
+    }    
 }
