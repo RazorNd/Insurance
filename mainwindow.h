@@ -20,9 +20,6 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-private:
-    QSqlRelationalTableModel *createModel(const QString &tableName, std::initializer_list<QString> headers = {},
-                                          std::initializer_list<std::tuple<int, QString, QString, QString> > relations = {});
 
 
 private slots:
@@ -35,6 +32,10 @@ private slots:
     void on_insuranceTypeView_doubleClicked(const QModelIndex &index);
 
     void on_addInsuranceType_triggered();
+
+    void on_addInsuranceDeal_triggered();
+
+    void on_InsuranceDealView_doubleClicked(const QModelIndex &index);
 
 private:
     Ui::MainWindow *ui;

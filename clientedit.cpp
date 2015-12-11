@@ -1,8 +1,12 @@
 #include "clientedit.h"
 #include "ui_clientedit.h"
+#include "insurancedealcreate.h"
 #include <QSqlRelationalTableModel>
 #include <QSqlQuery>
+#include <QSqlError>
+#include <QMessageBox>
 #include <QDebug>
+
 
 ClientEdit::ClientEdit(QSqlRelationalTableModel *model, const QModelIndex &index, bool insert, QWidget *parent) :
     QDialog(parent),
@@ -18,9 +22,7 @@ ClientEdit::ClientEdit(QSqlRelationalTableModel *model, const QModelIndex &index
     _mapper->addMapping(ui->clientPassportEdit, model->fieldIndex("passport"));
 
     _mapper->setCurrentModelIndex(index);
-    _mapper->setSubmitPolicy(QDataWidgetMapper::ManualSubmit);
-
-    connect(this, SIGNAL(accepted()), _mapper, SLOT(submit()));
+    _mapper->setSubmitPolicy(QDataWidgetMapper::ManualSubmit);    
 
     bool isHaveCID = false;
     CID = model->index(index.row(),
@@ -68,4 +70,21 @@ void ClientEdit::on_filterApply_clicked()
 void ClientEdit::on_filterClear_clicked()
 {
     setFilters();
+}
+
+void ClientEdit::on_buttonBox_accepted()
+{    
+    if(!_mapper->submit()) {
+        QSqlError error = qobject_cast<QSqlRelationalTableModel *>(_mapper->model())->lastError();
+        QMessageBox::warning(this, "Ошибка при сохранении клиента",
+                             QString("Внимание, клиент не был сохранен из за возникновения ошибки: %1").arg(error.text()));
+        return;
+    }
+    accept();
+}
+
+void ClientEdit::on_createNewDealButton_clicked()
+{
+    InsuranceDealCreate edit(_dealModel, CID, this);
+    edit.exec();
 }

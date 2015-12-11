@@ -2,7 +2,11 @@
 #include "ui_mainwindow.h"
 #include "clientedit.h"
 #include "insurancetypeedit.h"
+#include "insurancedealcreate.h"
+#include "insurancedealview.h"
+#include "models.h"
 #include <QSqlError>
+#include <QSqlRelationalDelegate>
 #include <QSqlQuery>
 #include <QDebug>
 
@@ -23,45 +27,15 @@ MainWindow::MainWindow(QWidget *parent) :
     if(!db.open("root", "root")) {
         qDebug() << db.lastError().text();
     }
-    ui->clientsView->setModel(_clients = createModel("Clients", {"id", "Имя", "Фамилия", "Паспорт"}));
-    ui->insuranceTypeView->setModel(_insuranceType = createModel("InsuranceType", {"id", "вид страхования"}));
-    ui->InsuranceDealView->setModel(_insuranceDeal = createModel("InsuranceDeal",
-                                    {"id", "вид страхования", "имя клиента", "фамилия клиента", "параметры", "действует с", "дейчтвительна до"},
-                                    {
-                                        std::make_tuple(1, QString("InsuranceType"), QString("InsTypeID"), QString("name")),
-                                        std::make_tuple(2, QString("Clients"), QString("CID"), QString("firstName, lastName"))
-                                    }));
-
-
-
+    ui->clientsView->setModel(_clients = createClienModel(this));
+    ui->insuranceTypeView->setModel(_insuranceType = createTypeModel(this));
+    ui->InsuranceDealView->setModel(_insuranceDeal = createDealModel(this));
+    ui->InsuranceDealView->hideColumn(_insuranceDeal->fieldIndex("param"));
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
-}
-
-QSqlRelationalTableModel *MainWindow::createModel(const QString &tableName, std::initializer_list<QString> headers,
-                                                  std::initializer_list<std::tuple<int, QString, QString, QString> > relations)
-{
-    QSqlRelationalTableModel *model = new QSqlRelationalTableModel(this);
-    model->setTable(tableName);
-
-    if(headers.size()) {
-        auto headerIterator = headers.begin();
-        for(int i = 0; headerIterator != headers.end(); headerIterator++, i++) {
-            model->setHeaderData(i, Qt::Horizontal, *headerIterator);
-        }
-    }
-
-    for(const std::tuple<int, QString, QString, QString> &relation : relations) {
-        int column;
-        QString table, index, display;
-        std::tie(column, table, index, display) = relation;
-        model->setRelation(column, QSqlRelation(table, index, display));
-    }
-    model->select();
-    return model;
 }
 
 void MainWindow::on_settingsAction_triggered()
@@ -100,7 +74,18 @@ void MainWindow::on_addInsuranceType_triggered()
     _insuranceType->insertRow(newRow);    
     InsuranceTypeEdit edit(_insuranceType, _insuranceType->index(newRow, 0), true, this);
     if(edit.exec() != QDialog::Accepted) {
-
         _insuranceType->revertAll();
-    }    
+    }
+}
+
+void MainWindow::on_addInsuranceDeal_triggered()
+{
+    InsuranceDealCreate edit(_insuranceDeal, this);
+    edit.exec();
+}
+
+void MainWindow::on_InsuranceDealView_doubleClicked(const QModelIndex &index)
+{
+    InsuranceDealView view(_insuranceDeal, index, this);
+    view.exec();
 }
