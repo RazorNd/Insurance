@@ -5,6 +5,7 @@
 #include "insurancedealcreate.h"
 #include "insurancedealview.h"
 #include "models.h"
+#include "customcomparatorproxyfiltermodel.h"
 #include <QSqlError>
 #include <QSqlRelationalDelegate>
 #include <QSqlQuery>
@@ -29,7 +30,7 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 
     ui->clientsView->setModel(createClientFilter(_clients = createClienModel(this)));
-    ui->insuranceTypeView->setModel(_insuranceType = createTypeModel(this));
+    ui->insuranceTypeView->setModel(createInsuranceTypeFilter(_insuranceType = createTypeModel(this)));
     ui->InsuranceDealView->setModel(_insuranceDeal = createDealModel(this));
     ui->InsuranceDealView->hideColumn(_insuranceDeal->fieldIndex("param"));
 }
@@ -104,6 +105,41 @@ QSortFilterProxyModel *MainWindow::createClientFilter(QSqlRelationalTableModel *
             filterSlotsFactory(clientFilterModel, clients->fieldIndex("passport")));
 
     return clientFilterModel;
+}
+
+QSortFilterProxyModel *MainWindow::createInsuranceTypeFilter(QSqlRelationalTableModel *insType)
+{
+    CustomComparatorProxyFilterModel *insTypeFilterModel = new CustomComparatorProxyFilterModel(this);
+    insTypeFilterModel->setSourceModel(insType);
+
+    connect(ui->insTypeNameFilter, &QLineEdit::textChanged,
+            filterSlotsFactory(insTypeFilterModel, insType->fieldIndex("name")));    
+    auto slotFilterChanged =
+            [&, insType, insTypeFilterModel](){
+        insTypeFilterModel->addCustomComparatorFilter(insType->fieldIndex("priceForDay"),
+                                                      CustomComparatorProxyFilterModel::filterBetween(ui->priceForDayFIlterMore->value(),
+                                                                                                      ui->priceForDayFIlterLess->value()));
+    };
+
+    connect(ui->priceForDayFIlterMore, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+            slotFilterChanged);
+    connect(ui->priceForDayFIlterLess, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+            slotFilterChanged);
+    connect(ui->priceForDayFIlterMore, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+            [this](double min) -> void {
+        ui->priceForDayFIlterLess->setMinimum(min);
+    });
+    connect(ui->priceForDayFIlterLess, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+            [this](double max) -> void {
+        ui->priceForDayFIlterMore->setMaximum(max);
+    });
+    connect(ui->insTypeClearFilterButton, &QPushButton::clicked, [this](){
+        ui->insTypeNameFilter->clear();
+        ui->priceForDayFIlterMore->setValue(0.0);
+        ui->priceForDayFIlterLess->setValue(1000000.0);
+    });
+
+    return insTypeFilterModel;
 }
 
 std::function<void (QString)> MainWindow::filterSlotsFactory(MultipleFilterProxyModel *model, int columnNumber) const

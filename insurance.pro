@@ -23,7 +23,8 @@ SOURCES +=  main.cpp\
     models.cpp \
     insurancedealcreate.cpp \
     insurancedealview.cpp \
-    multiplefilterproxymodel.cpp
+    multiplefilterproxymodel.cpp \
+    customcomparatorproxyfiltermodel.cpp
 
 HEADERS +=  mainwindow.h \
             settingsdialog.h \
@@ -33,7 +34,8 @@ HEADERS +=  mainwindow.h \
     models.h \
     insurancedealcreate.h \
     insurancedealview.h \
-    multiplefilterproxymodel.h
+    multiplefilterproxymodel.h \
+    customcomparatorproxyfiltermodel.h
 
 FORMS   +=  mainwindow.ui \
             settingsdialog.ui \

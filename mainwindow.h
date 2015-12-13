@@ -44,6 +44,7 @@ private slots:
 private:
 
     QSortFilterProxyModel *createClientFilter(QSqlRelationalTableModel *clients);
+    QSortFilterProxyModel *createInsuranceTypeFilter(QSqlRelationalTableModel *insType);
     std::function<void (QString)> filterSlotsFactory(MultipleFilterProxyModel *model, int columnNumber) const;
 
     Ui::MainWindow *ui;
