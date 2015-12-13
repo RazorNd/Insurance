@@ -104,6 +104,20 @@ QSortFilterProxyModel *MainWindow::createClientFilter(QSqlRelationalTableModel *
     connect(ui->clientPassportFilter, &QLineEdit::textChanged,
             filterSlotsFactory(clientFilterModel, clients->fieldIndex("passport")));
 
+    createMenuAction(ui->clientFilterGroupBox, "Скрыть", QList<std::function <void()>>()
+                     << std::bind(&QGroupBox::hide, ui->clientFilterGroupBox)
+                     << [this](){
+        ui->clientFirstNameFilter->clear();
+        ui->clientLastNameFilter->clear();
+        ui->clientPassportFilter->clear();
+    });
+    setActionTriggeredSlots(ui->findClientAction, QList<std::function <void()>>()
+                            << std::bind(&QGroupBox::show, ui->clientFilterGroupBox)
+                            << changeTabIndexSlot(0));
+
+    ui->clientFilterGroupBox->hide();
+
+
     return clientFilterModel;
 }
 
@@ -133,11 +147,23 @@ QSortFilterProxyModel *MainWindow::createInsuranceTypeFilter(QSqlRelationalTable
             [this](double max) -> void {
         ui->priceForDayFIlterMore->setMaximum(max);
     });
-    connect(ui->insTypeClearFilterButton, &QPushButton::clicked, [this](){
+
+    auto clearFilterSlot = [this](){
         ui->insTypeNameFilter->clear();
         ui->priceForDayFIlterMore->setValue(0.0);
         ui->priceForDayFIlterLess->setValue(1000000.0);
-    });
+    };
+
+    connect(ui->insTypeClearFilterButton, &QPushButton::clicked, clearFilterSlot);
+
+    createMenuAction(ui->insTypeFilterGroupBox, "Скрыть", QList<std::function <void()>>()
+                     << std::bind(&QGroupBox::hide, ui->insTypeFilterGroupBox)
+                     << clearFilterSlot);
+    setActionTriggeredSlots(ui->findInsuranceType, QList<std::function <void()>>()
+                            << std::bind(&QGroupBox::show, ui->insTypeFilterGroupBox)
+                            << changeTabIndexSlot(1));
+
+    ui->insTypeFilterGroupBox->hide();
 
     return insTypeFilterModel;
 }
@@ -196,19 +222,12 @@ QSortFilterProxyModel *MainWindow::createInsuranceDealFilter(QSqlRelationalTable
 
     ui->insDealFilterGroupBox->hide();
 
-    QAction *hideAction = new QAction("Скрыть", ui->insDealFilterGroupBox);
-    ui->insDealFilterGroupBox->addAction(hideAction);
-
-    connect(ui->findInsuranceDeal, &QAction::triggered,
-            ui->insDealFilterGroupBox, &QGroupBox::show);
-    connect(ui->findInsuranceDeal, &QAction::triggered,
-            [this](){
-        ui->tabWidget->setCurrentIndex(2);
-    });
-
-    connect(hideAction, &QAction::triggered,
-            ui->insDealFilterGroupBox, &QGroupBox::hide);
-    connect(hideAction, &QAction::triggered, clearFiltersSlot);
+    createMenuAction(ui->insDealFilterGroupBox, "Скрыть", QList<std::function <void()>>()
+                     << std::bind(&QGroupBox::hide, ui->insDealFilterGroupBox)
+                     << clearFiltersSlot);
+    setActionTriggeredSlots(ui->findInsuranceDeal, QList<std::function <void()>>()
+                            << std::bind(&QGroupBox::show, ui->insDealFilterGroupBox)
+                            << changeTabIndexSlot(2));
 
     return insDealFilterModel;
 }
@@ -217,5 +236,26 @@ std::function<void (QString)> MainWindow::filterSlotsFactory(MultipleFilterProxy
 {
     return [columnNumber, model] (QString filterPattern) -> void {
         model->setFilterWildcard(columnNumber, filterPattern);
+    };
+}
+
+void MainWindow::createMenuAction(QWidget *widget, const QString &text, QList<std::function<void ()>> trigeredSlots)
+{
+    QAction *action = new QAction(text, widget);
+    widget->addAction(action);
+    setActionTriggeredSlots(action, trigeredSlots);
+}
+
+void MainWindow::setActionTriggeredSlots(QAction *action, QList<std::function<void ()> > trigeredSlots)
+{
+    for(const auto &slot : trigeredSlots) {
+        connect(action, &QAction::triggered, slot);
+    }
+}
+
+std::function<void ()> MainWindow::changeTabIndexSlot(int index)
+{
+    return [this, index]() {
+        ui->tabWidget->setCurrentIndex(index);
     };
 }

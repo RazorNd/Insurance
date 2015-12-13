@@ -8,6 +8,7 @@
 #include <QMainWindow>
 #include <QSqlRelationalTableModel>
 #include <QSortFilterProxyModel>
+#include <QList>
 
 namespace Ui {
 class MainWindow;
@@ -47,6 +48,11 @@ private:
     QSortFilterProxyModel *createInsuranceTypeFilter(QSqlRelationalTableModel *insType);
     QSortFilterProxyModel *createInsuranceDealFilter(QSqlRelationalTableModel *insDeal);
     std::function<void (QString)> filterSlotsFactory(MultipleFilterProxyModel *model, int columnNumber) const;
+
+    void createMenuAction(QWidget *widget, const QString &text, QList<std::function<void ()>> trigeredSlots);
+    void setActionTriggeredSlots(QAction *action, QList<std::function<void ()>> trigeredSlots);
+
+    std::function<void ()> changeTabIndexSlot(int index);
 
     Ui::MainWindow *ui;
 };

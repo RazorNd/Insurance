@@ -54,6 +54,9 @@
            </attribute>
           </widget>
           <widget class="QGroupBox" name="clientFilterGroupBox">
+           <property name="contextMenuPolicy">
+            <enum>Qt::ActionsContextMenu</enum>
+           </property>
            <property name="title">
             <string>Фильтры</string>
            </property>
@@ -188,6 +191,9 @@
            </attribute>
           </widget>
           <widget class="QGroupBox" name="insTypeFilterGroupBox">
+           <property name="contextMenuPolicy">
+            <enum>Qt::ActionsContextMenu</enum>
+           </property>
            <property name="title">
             <string>Фильтры</string>
            </property>
