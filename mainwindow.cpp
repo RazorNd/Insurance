@@ -27,7 +27,8 @@ MainWindow::MainWindow(QWidget *parent) :
     if(!db.open("root", "root")) {
         qDebug() << db.lastError().text();
     }
-    ui->clientsView->setModel(_clients = createClienModel(this));
+
+    ui->clientsView->setModel(createClientFilter(_clients = createClienModel(this)));
     ui->insuranceTypeView->setModel(_insuranceType = createTypeModel(this));
     ui->InsuranceDealView->setModel(_insuranceDeal = createDealModel(this));
     ui->InsuranceDealView->hideColumn(_insuranceDeal->fieldIndex("param"));
@@ -88,4 +89,26 @@ void MainWindow::on_InsuranceDealView_doubleClicked(const QModelIndex &index)
 {
     InsuranceDealView view(_insuranceDeal, index, this);
     view.exec();
+}
+
+QSortFilterProxyModel *MainWindow::createClientFilter(QSqlRelationalTableModel *clients)
+{
+    MultipleFilterProxyModel *clientFilterModel = new MultipleFilterProxyModel(this);
+    clientFilterModel->setSourceModel(clients);
+
+    connect(ui->clientFirstNameFilter, &QLineEdit::textChanged,
+            filterSlotsFactory(clientFilterModel, clients->fieldIndex("firstName")));
+    connect(ui->clientLastNameFilter, &QLineEdit::textChanged,
+            filterSlotsFactory(clientFilterModel, clients->fieldIndex("lastName")));
+    connect(ui->clientPassportFilter, &QLineEdit::textChanged,
+            filterSlotsFactory(clientFilterModel, clients->fieldIndex("passport")));
+
+    return clientFilterModel;
+}
+
+std::function<void (QString)> MainWindow::filterSlotsFactory(MultipleFilterProxyModel *model, int columnNumber) const
+{
+    return [columnNumber, model] (QString filterPattern) -> void {
+        model->setFilterWildcard(columnNumber, filterPattern);
+    };
 }

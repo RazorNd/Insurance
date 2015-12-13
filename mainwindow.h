@@ -2,8 +2,12 @@
 #define MAINWINDOW_H
 
 #include "settingsdialog.h"
+#include "multiplefilterproxymodel.h"
+#include <functional>
+#include <QFunctionPointer>
 #include <QMainWindow>
 #include <QSqlRelationalTableModel>
+#include <QSortFilterProxyModel>
 
 namespace Ui {
 class MainWindow;
@@ -38,6 +42,10 @@ private slots:
     void on_InsuranceDealView_doubleClicked(const QModelIndex &index);
 
 private:
+
+    QSortFilterProxyModel *createClientFilter(QSqlRelationalTableModel *clients);
+    std::function<void (QString)> filterSlotsFactory(MultipleFilterProxyModel *model, int columnNumber) const;
+
     Ui::MainWindow *ui;
 };
 

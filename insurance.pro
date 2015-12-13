@@ -22,7 +22,8 @@ SOURCES +=  main.cpp\
     modelfactory.cpp \
     models.cpp \
     insurancedealcreate.cpp \
-    insurancedealview.cpp
+    insurancedealview.cpp \
+    multiplefilterproxymodel.cpp
 
 HEADERS +=  mainwindow.h \
             settingsdialog.h \
@@ -31,7 +32,8 @@ HEADERS +=  mainwindow.h \
     modelfactory.h \
     models.h \
     insurancedealcreate.h \
-    insurancedealview.h
+    insurancedealview.h \
+    multiplefilterproxymodel.h
 
 FORMS   +=  mainwindow.ui \
             settingsdialog.ui \
