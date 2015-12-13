@@ -31,7 +31,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->clientsView->setModel(createClientFilter(_clients = createClienModel(this)));
     ui->insuranceTypeView->setModel(createInsuranceTypeFilter(_insuranceType = createTypeModel(this)));
-    ui->InsuranceDealView->setModel(_insuranceDeal = createDealModel(this));
+    ui->InsuranceDealView->setModel(createInsuranceDealFilter(_insuranceDeal = createDealModel(this)));
     ui->InsuranceDealView->hideColumn(_insuranceDeal->fieldIndex("param"));
 }
 
@@ -140,6 +140,77 @@ QSortFilterProxyModel *MainWindow::createInsuranceTypeFilter(QSqlRelationalTable
     });
 
     return insTypeFilterModel;
+}
+
+QSortFilterProxyModel *MainWindow::createInsuranceDealFilter(QSqlRelationalTableModel *insDeal)
+{
+    CustomComparatorProxyFilterModel *insDealFilterModel = new CustomComparatorProxyFilterModel(this);
+    insDealFilterModel->setSourceModel(insDeal);
+
+    ui->insDealTypeFilter->setModel(insDeal->relationModel(insDeal->fieldIndex("name")));
+    ui->insDealTypeFilter->setModelColumn(1);
+
+    connect(ui->insDealClientFirstNameFilter, &QLineEdit::textChanged,
+            filterSlotsFactory(insDealFilterModel, insDeal->fieldIndex("firstName")));
+    connect(ui->insDealClientLastNameFilter, &QLineEdit::textChanged,
+            filterSlotsFactory(insDealFilterModel, insDeal->fieldIndex("lastName")));
+    connect(ui->insDealTypeFilter, &QComboBox::currentTextChanged,
+            filterSlotsFactory(insDealFilterModel, insDeal->fieldIndex("name")));
+
+    connect(ui->insDealDateMore, &QDateEdit::dateChanged, [insDealFilterModel, insDeal](QDate date) {
+        insDealFilterModel->addCustomComparatorFilter(insDeal->fieldIndex("validTo"),
+                                                      CustomComparatorProxyFilterModel::filterLess(date));
+    });
+
+    connect(ui->insDealDateLess, &QDateEdit::dateChanged, [insDealFilterModel, insDeal](QDate date) {
+        insDealFilterModel->addCustomComparatorFilter(insDeal->fieldIndex("createdAt"),
+                                                      CustomComparatorProxyFilterModel::filterMore(date));
+    });
+
+    auto costFilterChanged = [this, insDeal, insDealFilterModel]() {
+        insDealFilterModel->addCustomComparatorFilter(insDeal->fieldIndex("cost"),
+                                                      CustomComparatorProxyFilterModel::filterBetween(ui->insDealCostMore->value(),
+                                                                                                      ui->insDealCostLess->value()));
+    };
+
+    connect(ui->insDealCostMore, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+            costFilterChanged);
+    connect(ui->insDealCostLess, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+            costFilterChanged);
+
+    auto clearFiltersSlot = [this]() {
+        ui->insDealDateMore->setDate(QDate::currentDate());
+        ui->insDealDateLess->setDate(QDate::currentDate().addYears(1));
+
+        ui->insDealCostMore->setValue(0.0);
+        ui->insDealCostLess->setValue(1000000000.0);
+
+        ui->insDealClientFirstNameFilter->clear();
+        ui->insDealClientLastNameFilter->clear();
+        ui->insDealTypeFilter->clearEditText();
+    };
+
+    connect(ui->insDealClearFilrteButton, &QPushButton::clicked, clearFiltersSlot);
+
+    clearFiltersSlot();
+
+    ui->insDealFilterGroupBox->hide();
+
+    QAction *hideAction = new QAction("Скрыть", ui->insDealFilterGroupBox);
+    ui->insDealFilterGroupBox->addAction(hideAction);
+
+    connect(ui->findInsuranceDeal, &QAction::triggered,
+            ui->insDealFilterGroupBox, &QGroupBox::show);
+    connect(ui->findInsuranceDeal, &QAction::triggered,
+            [this](){
+        ui->tabWidget->setCurrentIndex(2);
+    });
+
+    connect(hideAction, &QAction::triggered,
+            ui->insDealFilterGroupBox, &QGroupBox::hide);
+    connect(hideAction, &QAction::triggered, clearFiltersSlot);
+
+    return insDealFilterModel;
 }
 
 std::function<void (QString)> MainWindow::filterSlotsFactory(MultipleFilterProxyModel *model, int columnNumber) const

@@ -45,6 +45,7 @@ private:
 
     QSortFilterProxyModel *createClientFilter(QSqlRelationalTableModel *clients);
     QSortFilterProxyModel *createInsuranceTypeFilter(QSqlRelationalTableModel *insType);
+    QSortFilterProxyModel *createInsuranceDealFilter(QSqlRelationalTableModel *insDeal);
     std::function<void (QString)> filterSlotsFactory(MultipleFilterProxyModel *model, int columnNumber) const;
 
     Ui::MainWindow *ui;

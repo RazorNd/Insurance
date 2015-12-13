@@ -39,7 +39,7 @@ public:
                 return false;
             }
             Type value = data.value<Type>();
-            return a < value;
+            return a > value;
         };
     }
 
