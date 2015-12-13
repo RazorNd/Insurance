@@ -2,8 +2,13 @@
 #define MAINWINDOW_H
 
 #include "settingsdialog.h"
+#include "multiplefilterproxymodel.h"
+#include <functional>
+#include <QFunctionPointer>
 #include <QMainWindow>
 #include <QSqlRelationalTableModel>
+#include <QSortFilterProxyModel>
+#include <QList>
 
 namespace Ui {
 class MainWindow;
@@ -20,9 +25,6 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-private:
-    QSqlRelationalTableModel *createModel(const QString &tableName, std::initializer_list<QString> headers = {},
-                                          std::initializer_list<std::tuple<int, QString, QString, QString> > relations = {});
 
 
 private slots:
@@ -36,7 +38,22 @@ private slots:
 
     void on_addInsuranceType_triggered();
 
+    void on_addInsuranceDeal_triggered();
+
+    void on_InsuranceDealView_doubleClicked(const QModelIndex &index);
+
 private:
+
+    QSortFilterProxyModel *createClientFilter(QSqlRelationalTableModel *clients);
+    QSortFilterProxyModel *createInsuranceTypeFilter(QSqlRelationalTableModel *insType);
+    QSortFilterProxyModel *createInsuranceDealFilter(QSqlRelationalTableModel *insDeal);
+    std::function<void (QString)> filterSlotsFactory(MultipleFilterProxyModel *model, int columnNumber) const;
+
+    void createMenuAction(QWidget *widget, const QString &text, QList<std::function<void ()>> trigeredSlots);
+    void setActionTriggeredSlots(QAction *action, QList<std::function<void ()>> trigeredSlots);
+
+    std::function<void ()> changeTabIndexSlot(int index);
+
     Ui::MainWindow *ui;
 };
 

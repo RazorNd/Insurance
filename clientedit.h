@@ -26,6 +26,10 @@ private slots:
 
     void on_filterClear_clicked();
 
+    void on_buttonBox_accepted();
+
+    void on_createNewDealButton_clicked();
+
 private:
     Ui::ClientEdit *ui;
 };

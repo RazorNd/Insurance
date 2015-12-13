@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui sql
+QT       += core gui sql qml
 
 CONFIG += c++14
 
@@ -18,14 +18,28 @@ SOURCES +=  main.cpp\
             mainwindow.cpp \
             settingsdialog.cpp \
             clientedit.cpp \
-            insurancetypeedit.cpp
+            insurancetypeedit.cpp \
+    modelfactory.cpp \
+    models.cpp \
+    insurancedealcreate.cpp \
+    insurancedealview.cpp \
+    multiplefilterproxymodel.cpp \
+    customcomparatorproxyfiltermodel.cpp
 
 HEADERS +=  mainwindow.h \
             settingsdialog.h \
             clientedit.h \
-            insurancetypeedit.h
+            insurancetypeedit.h \
+    modelfactory.h \
+    models.h \
+    insurancedealcreate.h \
+    insurancedealview.h \
+    multiplefilterproxymodel.h \
+    customcomparatorproxyfiltermodel.h
 
 FORMS   +=  mainwindow.ui \
             settingsdialog.ui \
             clientedit.ui \
-            insurancetypeedit.ui
+            insurancetypeedit.ui \
+    insurancedealedit.ui \
+    insurancedealview.ui
